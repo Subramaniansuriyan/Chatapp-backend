@@ -36,7 +36,31 @@ exports.create_group = async (req, res, next) => {
 }
 
 exports.delete_group = async (req, res, next) => {
-    const {group_name, created_by, visibility} = req.body;
+    const {group_id, userid} = req.body;
+    const ex_group = await Group.findOne({ where: { id:group_id } });
+    if (!ex_group) {
+        return res.status(400).json({
+            message: "group not_found",
+        });
+    }
+    const admin_user = await Group.findOne({where:{id:group_id}});
+    if(admin_user){
+        if(admin_user.created_by != userid){
+            return res.status(400).json({
+                message: "invalid request",
+            });
+        }
+    }
+    const rm_grp = await Group.destroy({ where:{
+            id:ex_group.id,
+            created_by:userid
+        }
+    })
+    if(rm_grp){
+        return res.status(200).json({
+            message: "group deleted",
+        });
+    }
 }
 
 exports.add_member = async (req, res, next) => {

@@ -2,19 +2,20 @@ const model = require('../../models');
 
 const { User , Friends } = model;
 
+const { Op } = require("sequelize");
 
 
 exports.add_friends = async (req, res, next) => {
     const {userid, friendid, status} = req.body;
     const current_user = await User.findOne({ where: { id:  userid } });
     if (!current_user) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User not_found",
         });
     }
     const friend = await User.findOne({ where: { id:  friendid } });
     if (!friend) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User not_found",
         }); 
     }
@@ -59,7 +60,7 @@ exports.accept_request = async (req, res, next) =>{
     }
     const friend = await User.findOne({ where: { id:  friendid } });
     if (!friend) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User not_found",
         }); 
     }
@@ -80,13 +81,13 @@ exports.cancel_request = async (req, res, next) =>{
     const {userid, friendid} = req.body;
     const current_user = await User.findOne({ where: { id:  userid } });
     if (!current_user) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User not_found",
         });
     }
     const friend = await User.findOne({ where: { id:  friendid } });
     if (!friend) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User not_found",
         }); 
     }
@@ -108,7 +109,7 @@ exports.all_friends = async (req, res, next) =>{
     console.log(userid)
     const current_user = await User.findOne({ where: { id:  userid } });
     if (!current_user) {
-        return res.status(404).json({
+        return res.status(400).json({
             message: "User not_found",
         });
     }
@@ -121,6 +122,36 @@ exports.all_friends = async (req, res, next) =>{
     }else{
         return res.status(400).json({
             message: "Friends not_found",
+        }); 
+    }
+}
+
+exports.search = async (req, res, next) => {
+    const user_list = []
+    const username = req.body.username;
+    let userFriends = new Set();
+    
+    const other_user = await User.findAll({where: {username: { [Op.notIn]: [username]}}});
+    for (const value of other_user) {
+        user_list.push(value.id)
+    }
+
+    const current_user = await User.findOne({where: {username:username}});
+    const all_friends = await Friends.findAll({where : {userid:current_user.id,friendid:user_list}})
+    if(all_friends.length<1){
+        return res.status(200).json({
+            data:other_user
+        }); 
+    }else{
+        
+        for (const friend of all_friends) {
+            userFriends.add(friend.friendid)
+        };
+    }
+    const recommendedusers = other_user.filter(user => !userFriends.has(user.id));
+    if(recommendedusers){
+        return res.status(200).json({
+            data:recommendedusers
         }); 
     }
 }

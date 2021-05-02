@@ -11,5 +11,7 @@ router.put('/acceptrequest',friendscontroller.accept_request);
 router.delete('/cancelrequest',friendscontroller.cancel_request);
 //user allfriends route
 router.get('/all_friends/:id',friendscontroller.all_friends);
+//search
+router.get('/search',friendscontroller.search);
 
 module.exports = router; 

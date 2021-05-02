@@ -12,6 +12,8 @@ var cors = require('cors')
 const UserRoutes = require('./routes/user/user_route.js');
 const friendsRoutes = require('./routes/friends/friends.js');
 const groupRoutes = require('./routes/group/group.js');
+const chatroomRoutes = require('./routes/chat/chatRoom.js')
+const chatMessageRoutes = require('./routes/chat/chatMessage.js');
 
 
 //database connection request 
@@ -35,6 +37,8 @@ app.use(cors())
 app.use('/user',UserRoutes);
 app.use('/friends',friendsRoutes);
 app.use('/groups',groupRoutes);
+app.use('/chatroom',chatroomRoutes);
+app.use('/chatmessage',chatMessageRoutes);
 
 
 app.use((req,res,next) => {
